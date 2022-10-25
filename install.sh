@@ -135,7 +135,7 @@ SSL_KEY="$HOST_SSL_KEY"
 SSL_CERT="$HOST_SSL_CRT"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set to yes for container to listen on LOCAL_IP only
-HOST_LOCAL_ONLY="yes"
+HOST_LOCAL_ONLY="no"
 LOCAL_IP="127.0.0.1"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set this to 0.0.0.0 to listen on all or specify addresses
