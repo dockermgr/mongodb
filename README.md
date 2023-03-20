@@ -1,4 +1,4 @@
-## 👋 Welcome to README.md 🚀  
+## 👋 Welcome to mongodb 🚀  
 
 mongodb README  
   
@@ -13,31 +13,31 @@ mongodb README
 ## Automatic install/update  
 
 ```shell
-dockermgr update README.md
+dockermgr update mongodb
 ```
 
 OR
 
 ```shell
-mkdir -p "$HOME/.local/share/srv/docker/README.md/dataDir"
-git clone "https://github.com/dockermgr/README.md" "$HOME/.local/share/CasjaysDev/dockermgr/README.md"
-cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/README.md/dataDir/." "$HOME/.local/share/srv/docker/README.md/dataDir/"
+mkdir -p "$HOME/.local/share/srv/docker/mongodb/dataDir"
+git clone "https://github.com/dockermgr/mongodb" "$HOME/.local/share/CasjaysDev/dockermgr/mongodb"
+cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/mongodb/dataDir/." "$HOME/.local/share/srv/docker/mongodb/dataDir/"
 ```
 
 ## via command line  
 
 ```shell
-docker pull casjaysdevdocker/README.md:latest && \
+docker pull casjaysdevdocker/mongodb:latest && \
 docker run -d \
 --restart always \
 --privileged \
---name casjaysdevdocker-README.md \
---hostname casjaysdev-README.md \
+--name casjaysdevdocker-mongodb \
+--hostname casjaysdev-mongodb \
 -e TZ=${TIMEZONE:-America/New_York} \
--v $HOME/.local/share/srv/docker/README.md/dataDir/data:/data:z \
--v $HOME/.local/share/srv/docker/README.md/dataDir/config:/config:z \
+-v $HOME/.local/share/srv/docker/mongodb/dataDir/data:/data:z \
+-v $HOME/.local/share/srv/docker/mongodb/dataDir/config:/config:z \
 -p 80:80 \
-casjaysdevdocker/README.md:latest
+casjaysdevdocker/mongodb:latest
 ```
 
 ## via docker-compose  
@@ -45,15 +45,15 @@ casjaysdevdocker/README.md:latest
 ```yaml
 version: "2"
 services:
-  README.md:
-    image: casjaysdevdocker/README.md
-    container_name: README.md
+  mongodb:
+    image: casjaysdevdocker/mongodb
+    container_name: mongodb
     environment:
       - TZ=America/New_York
-      - HOSTNAME=casjaysdev-README.md
+      - HOSTNAME=casjaysdev-mongodb
     volumes:
-      - $HOME/.local/share/srv/docker/README.md/dataDir/data:/data:z
-      - $HOME/.local/share/srv/docker/README.md/dataDir/config:/config:z
+      - $HOME/.local/share/srv/docker/mongodb/dataDir/data:/data:z
+      - $HOME/.local/share/srv/docker/mongodb/dataDir/config:/config:z
     ports:
       - 80:80
     restart: always
@@ -61,6 +61,6 @@ services:
 
 ## Author  
 
+📽 dockermgr: [Github](https://github.com/dockermgr) 📽  
 🤖 casjay: [Github](https://github.com/casjay) [Docker](https://hub.docker.com/r/casjay) 🤖  
-📽  dockermgr: [Github](https://github.com/dockermgr) [Docker](https://hub.docker.com/r/dockermgr) 📽  
-⛵ CasjaysDev Docker: [Github](https://github.com/casjaysdevdocker) [Docker](https://hub.docker.com/r/casjaysdevdocker) ⛵  
+⛵ CasjaysDevDocker: [Github](https://github.com/casjaysdevdocker) [Docker](https://hub.docker.com/r/casjaysdevdocker) ⛵  
