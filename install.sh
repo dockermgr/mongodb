@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##@Version           :  202303200914-git
+##@Version           :  202303210210-git
 # @@Author           :  Jason Hempstead
 # @@Contact          :  jason@casjaysdev.com
-# @@License          :  LICENSE.md
+# @@License          :  WTFPL
 # @@ReadME           :  install.sh --help
 # @@Copyright        :  Copyright: (c) 2023 Jason Hempstead, Casjays Developments
-# @@Created          :  Monday, Mar 20, 2023 09:14 EDT
+# @@Created          :  Tuesday, Mar 21, 2023 02:10 EDT
 # @@File             :  install.sh
 # @@Description      :  Container installer script for mongodb
 # @@Changelog        :  New script
@@ -19,7 +19,7 @@
 # @@Template         :  installers/dockermgr
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="mongodb"
-VERSION="202303200914-git"
+VERSION="202303210210-git"
 HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
 RUN_USER="${SUDO_USER:-$USER}"
@@ -301,7 +301,7 @@ CONTAINER_SUPABASE_ENABLED=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Database root user [user] [pass/random]
 CONTAINER_DATABASE_USER_ROOT=""
-CONTAINER_DATABASE_PASS_ROOT="random"
+CONTAINER_DATABASE_PASS_ROOT=""
 CONTAINER_DATABASE_LENGTH_ROOT="12"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Database non-root user [user] [pass/random]
@@ -325,7 +325,7 @@ CONTAINER_EMAIL_DOMAIN=""
 CONTAINER_EMAIL_RELAY=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Add the names of processes [apache,mysql]
-CONTAINER_SERVICES_LIST="mongod"
+CONTAINER_SERVICES_LIST="mongod,node"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Mount container data dir [yes/no] [/data]
 CONTAINER_MOUNT_DATA_ENABLED="yes"
@@ -455,6 +455,7 @@ mkdir -p "$LOCAL_CONFIG_DIR"
 mkdir -p "$DOCKERMGR_CONFIG_DIR/env"
 mkdir -p "$DOCKERMGR_CONFIG_DIR/secure"
 mkdir -p "$DOCKERMGR_CONFIG_DIR/scripts"
+mkdir -p "$DOCKERMGR_CONFIG_DIR/installed"
 mkdir -p "$DOCKERMGR_CONFIG_DIR/containers"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # variable cleanup
@@ -765,8 +766,9 @@ if [ "$CONTAINER_WEB_SERVER_ENABLED" = "yes" ]; then
     CONTAINER_HTTP_PROTO="http"
   fi
   if [ -z "$CONTAINER_WEB_SERVER_LISTEN_ON" ]; then
-    CONTAINER_WEB_SERVER_LISTEN_ON="$HOST_DEFINE_LISTEN"
+    CONTAINER_WEB_SERVER_LISTEN_ON="$HOST_LISTEN_ADDR"
   fi
+  NGINX_PROXY_ADDRESS="${CONTAINER_WEB_SERVER_LISTEN_ON:-$HOST_LISTEN_ADDR}"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # SSL setup
@@ -777,7 +779,7 @@ if [ "$NGINX_SSL" = "yes" ]; then
     PROXY_HTTP_PROTO="https"
   fi
   if [ "$PROXY_HTTP_PROTO" = "https" ]; then
-    NGINX_PROXY_URL="$PROXY_HTTP_PROTO://$HOST_LISTEN_ADDR:$NGINX_PROXY_PORT"
+    NGINX_PROXY_URL="$PROXY_HTTP_PROTO://$NGINX_PROXY_ADDRESS:$NGINX_PROXY_PORT"
     if [ -f "$HOST_SSL_CRT" ] && [ -f "$HOST_SSL_KEY" ]; then
       if [ -f "$CONTAINER_SSL_CA" ]; then
         CONTAINER_MOUNTS+="$HOST_SSL_CA:$CONTAINER_SSL_CA "
@@ -849,19 +851,19 @@ if [ "$CONTAINER_POSTGRES_ENABLED" = "yes" ]; then
   CONTAINER_DATABASE_ENABLED="yes"
   CONTAINER_DATABASE_PROTO="postgresql://$HOST_LISTEN_ADDR:5432"
   DOCKER_SET_TMP_PUBLISH+=(--publish "$CONTAINER_DATABASE_LISTEN:5432:5432")
-  DATABASE_DIR_PGSQL="${DATABASE_DIR_PGSQL:-$DATABASE_BASE_DIR/pgsql}"
-  DOCKER_SET_OPTIONS+="--volume $LOCAL_DATA_DIR/db/pgsql:/$DATABASE_DIR_PGSQL:z "
+  DATABASE_DIR_POSTGRES="${DATABASE_DIR_POSTGRES:-$DATABASE_BASE_DIR/postgres}"
+  DOCKER_SET_OPTIONS+="--volume $LOCAL_DATA_DIR/db/postgres:/$DATABASE_DIR_POSTGRES:z "
   DOCKER_SET_OPTIONS+="--env ENV_PORTS=5432 "
-  DOCKER_SET_OPTIONS+="--env DATABASE_DIR_PGSQL=$DATABASE_DIR_PGSQL "
-  MESSAGE_PGSQL="Database files are saved to:      $DATABASE_DIR_PGSQL"
+  DOCKER_SET_OPTIONS+="--env DATABASE_DIR_POSTGRES=$DATABASE_DIR_POSTGRES "
+  MESSAGE_PGSQL="Database files are saved to:      $DATABASE_DIR_POSTGRES"
 fi
 if [ "$CONTAINER_MARIADB_ENABLED" = "yes" ]; then
   SHOW_DATABASE_INFO="true"
   CONTAINER_DATABASE_ENABLED="yes"
   CONTAINER_DATABASE_PROTO="mysql://$HOST_LISTEN_ADDR:3306"
   DOCKER_SET_TMP_PUBLISH+=(--publish "$CONTAINER_DATABASE_LISTEN:3306:3306")
-  DATABASE_DIR_MARIADB="${DATABASE_DIR_MARIADB:-$DATABASE_BASE_DIR/mysql}"
-  DOCKER_SET_OPTIONS+="--volume $LOCAL_DATA_DIR/db/mysql:/$DATABASE_DIR_MARIADB:z "
+  DATABASE_DIR_MARIADB="${DATABASE_DIR_MARIADB:-$DATABASE_BASE_DIR/mariadb}"
+  DOCKER_SET_OPTIONS+="--volume $LOCAL_DATA_DIR/db/mariadb:/$DATABASE_DIR_MARIADB:z "
   DOCKER_SET_OPTIONS+="--env ENV_PORTS=3306 "
   DOCKER_SET_OPTIONS+="--env DATABASE_DIR_MARIADB=$DATABASE_DIR_MARIADB "
   MESSAGE_MARIADB="Database files are saved to:      $DATABASE_DIR_MARIADB"
@@ -1225,7 +1227,7 @@ else
   NGINX_PROXY_PORT="$CLEANUP_PORT"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NGINX_PROXY_URL="${NGINX_PROXY_URL:-$PROXY_HTTP_PROTO://$HOST_LISTEN_ADDR:$NGINX_PROXY_PORT}"
+NGINX_PROXY_URL="${NGINX_PROXY_URL:-$PROXY_HTTP_PROTO://$NGINX_PROXY_ADDRESS:$NGINX_PROXY_PORT}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set temp env for PORTS ENV variable
 DOCKER_SET_PORTS_ENV_TMP="$(echo "$SET_WEB_PORT" | tr ' ' '\n' | grep ':.*.:' | awk -F ':' '{print $1":"$3}' | grep '^')"
@@ -1280,6 +1282,9 @@ if __am_i_online; then
   # exit on fail
   failexitcode $? "$message has failed"
 fi
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Write the container name to file
+echo "$CONTAINER_NAME" >"$DOCKERMGR_CONFIG_DIR/installed/$APPNAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Copy over data files - keep the same stucture as -v dataDir/mnt:/mount
 if [ -d "$INSTDIR/rootfs" ] && [ ! -f "$DATADIR/.installed" ]; then
